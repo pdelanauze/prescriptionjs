@@ -1,5 +1,5 @@
 {
-  "id": "soca-sass-boilerplate",
+  "id": "prescriptionjs",
   "mapDirectories": {
   "config.js": "",
   "index.html": "_attachments/index.html",
