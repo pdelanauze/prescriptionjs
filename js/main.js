@@ -15,10 +15,10 @@ require([
   'application/plugins',
   'underscore',
   'backbone',
-  'backbone.marionette',
   'application/backbone-couchdb',
-  'modelbinding'
-], function ($, jQueryCouch, sha1, plugins, _, Backbone, Marionette, backboneCouchDb, ModelBinding) {
+  'modelbinding',
+  'application/prescription-app'
+], function ($, jQueryCouch, sha1, plugins, _, Backbone, backboneCouchDb, ModelBinding, Prescription) {
 
   console.log(arguments);
 
@@ -34,11 +34,18 @@ require([
     escape      : /<%=([\s\S]+?)%>/g
   };
 
-  var WebApp = new Marionette.Application();
-  WebApp.addInitializer(function(options){
-    console.log('Marionette App starting', arguments);
-  });
+  $(function(){
 
-  WebApp.start({});
+    // Prep the application
+    var prescriptions = new Prescription.Collections.PrescriptionCollection();
+    var prescriptionsTable = new Prescription.Views.PrescriptionTableControlView({
+      collection: prescriptions,
+      el: $('#prescriptions-list-container')
+    });
+
+    prescriptionsTable.render();
+    prescriptions.fetch();
+
+  });
 
 });
