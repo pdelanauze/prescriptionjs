@@ -23,6 +23,18 @@ define(['backbone', 'underscore', 'modelbinding'], function (Backbone, _, ModelB
       if (!this.get('updatedAt')) {
         this.set({updatedAt:new Date()});
       }
+      if (!this.get('name')) {
+        this.set({name:''});
+      }
+      if (!this.get('domain')) {
+        this.set({domain:''});
+      }
+      if (!this.get('path')) {
+        this.set({path:''});
+      }
+      if (!this.get('script')) {
+        this.set({script:''});
+      }
     }
   });
 
@@ -100,6 +112,90 @@ define(['backbone', 'underscore', 'modelbinding'], function (Backbone, _, ModelB
     render:function () {
       $(this.el).html(_.template(this.template));
       return this;
+    }
+  });
+
+  PrescriptionApp.Views.PrescriptionEditView = Backbone.View.extend({
+    className:'prescription-edit-view',
+    template:'<form action="#/prescriptions" method="POST"><fieldset>' +
+        '<div class="clearfix">' +
+        '<label for="prescription-<%= id %>-name">Name</label>' +
+        '<div class="input">' +
+        '<input class="xlarge" id="prescription-<%= id %>-name" value="<%= name %>" size="30" type="text"/> ' +
+        '</div>' +
+        '</div>' +
+        '<div class="clearfix">' +
+        '<label for="prescription-<%= id %>-domain">Domain</label>' +
+        '<div class="input">' +
+        '<input class="xlarge" id="prescription-<%= id %>-domain" value="<%= domain %>" size="30" type="text"/> ' +
+        '</div>' +
+        '</div>' +
+        '<div class="clearfix">' +
+        '<label for="prescription-<%= id %>-path">Path</label>' +
+        '<div class="input">' +
+        '<input class="xlarge" id="prescription-<%= id %>-path" value="<%= path %>" size="30" type="text"/> ' +
+        '</div>' +
+        '</div>' +
+        '<div class="clearfix">' +
+        '<label for="prescription-<%= id %>-script">Script</label>' +
+        '<div class="input">' +
+        '<textarea class="xxlarge" id="prescription-<%= id %>-script" rows="7"><%= script %></textarea> ' +
+        '</div>' +
+        '</div>' +
+        '<div class="actions">' +
+        '<button class="btn primary" type="submit">Save</button>' +
+        '&nbsp;<button class="btn" type="reset">Reset</button>' +
+        '</div> ' +
+        '</fieldset></form>',
+
+    events:{
+
+    },
+    initialize:function () {
+      _.bindAll(this, 'render');
+
+      var data = this.model.toJSON();
+      if (!data.id){
+        data.id = 'new';
+      }
+
+      $(this.el).html(_.template(this.template, data));
+    },
+    render:function () {
+
+      return this;
+    }
+  });
+
+
+  PrescriptionApp.Routers.PrescriptionRouter = Backbone.Router.extend({
+
+    possibleStateClasses:[
+      'list-prescriptions-state',
+      'edit-prescription-state',
+      'new-prescription-state',
+    ],
+
+    newPrescriptionView: null,
+
+    routes:{
+      "prescriptions/new": 'newPrescription'
+    },
+    switchToStateClass: function(el, newClass){
+      $(el).removeClass(this.possibleStateClasses.join(' ')).addClass(newClass);
+      return this;
+    },
+    getParentElement: function(){
+      return $("#prescription-app-container");
+    },
+    newPrescription:function () {
+      var parent = this.getParentElement();
+      this.switchToStateClass(parent, 'edit-prescription-state new-prescription-state');
+
+      this.newPrescriptionView = new PrescriptionApp.Views.PrescriptionEditView({
+        model: new PrescriptionApp.Models.Prescription(),
+        el: $(".prescription-edit-container", parent)
+      });
     }
   });
 

@@ -18,7 +18,7 @@ require([
   'application/backbone-couchdb',
   'modelbinding',
   'application/prescription-app'
-], function ($, jQueryCouch, sha1, plugins, _, Backbone, backboneCouchDb, ModelBinding, Prescription) {
+], function ($, jQueryCouch, sha1, plugins, _, Backbone, backboneCouchDb, ModelBinding, PrescriptionApp) {
 
   console.log(arguments);
 
@@ -37,14 +37,17 @@ require([
   $(function(){
 
     // Prep the application
-    var prescriptions = new Prescription.Collections.PrescriptionCollection();
-    var prescriptionsTable = new Prescription.Views.PrescriptionTableControlView({
+    var prescriptions = new PrescriptionApp.Collections.PrescriptionCollection();
+    var prescriptionsTable = new PrescriptionApp.Views.PrescriptionTableControlView({
       collection: prescriptions,
       el: $('#prescriptions-list-container')
     });
 
     prescriptionsTable.render();
     prescriptions.fetch();
+
+    var prescriptionRouter = new PrescriptionApp.Routers.PrescriptionRouter();
+    Backbone.history.start();
 
   });
 
