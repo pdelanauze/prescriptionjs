@@ -171,7 +171,7 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
               'var location = encodeURIComponent(window.location);' +
               'var domain = encodeURIComponent(window.location.host);' +
               's.onload = function(){};' +
-              's.src = "<%- href %>" + "?url=" + location + "&startkey=\\"" + domain + "\\"&endkey=\\"" + domain + "\u9999\\"";' +
+              's.src = "<%- href %>" + "?url=" + location + "&limit=100&startkey=\\"" + domain + "\\"&endkey=\\"" + domain + "\u9999\\"";' +
               'document.body.appendChild(s);' +
               '}();', {
         href: href

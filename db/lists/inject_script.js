@@ -16,7 +16,7 @@ function (head, req) {
     if (path && path[0] != '/') {
       path = '/' + path;
     }
-    if (!path || urlPath.indexOf(path) == 0) {
+    if (!path || (urlPath && urlPath.indexOf(path) == 0)) {
       scripts += script + '\n';
     }
 
