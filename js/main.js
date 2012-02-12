@@ -28,6 +28,8 @@ require([
   Backbone.couch_connector.config.view_name = 'by_type';
   Backbone.couch_connector.config.global_changes = true;
 
+  ModelBinding.Configuration.configureAllBindingAttributes("name");
+
   _.templateSettings = {
     evaluate    : /<%([\s\S]+?)%>/g,
     interpolate : /<%-([\s\S]+?)%>/g,
@@ -41,12 +43,14 @@ require([
     var prescriptionsTable = new PrescriptionApp.Views.PrescriptionTableControlView({
       collection: prescriptions,
       el: $('#prescriptions-list-container')
-    });
+    }).render();
 
     prescriptionsTable.render();
     prescriptions.fetch();
 
-    var prescriptionRouter = new PrescriptionApp.Routers.PrescriptionRouter();
+    var prescriptionRouter = new PrescriptionApp.Routers.PrescriptionRouter({
+      collection: prescriptions
+    });
     Backbone.history.start();
 
   });

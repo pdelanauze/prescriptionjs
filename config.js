@@ -12,6 +12,7 @@
   "templates": "_attachments/templates",
   "db": "",
   "Jimfile": false,
-  "hooks": false
+  "hooks": false,
+  "test": false
 }
 }
