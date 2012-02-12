@@ -66,14 +66,14 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
     className:'prescription-table-item-view',
     tagName:'tr',
     template:_.template('<td class="id" data-bind="id"></td>' +
-        '<td class="name" data-bind="text name"></td>' +
-        '<td class="domain" data-bind="text domain"></td> ' +
-        '<td class="path" data-bind="text path"></td> ' +
-        '<td class="updated-at" data-bind="text updatedAt"></td>' +
-        '<td class="table-cell-actions">' +
-        '<a class="btn small edit" href="#/prescriptions/edit">Edit</a>' +
-        '<form action="#/prescriptions" method="DELETE"><button type="submit" class="btn small danger delete">Delete</button></form> ' +
-        '</td> '),
+            '<td class="name" data-bind="text name"></td>' +
+            '<td class="domain" data-bind="text domain"></td> ' +
+            '<td class="path" data-bind="text path"></td> ' +
+            '<td class="updated-at" data-bind="text updatedAt"></td>' +
+            '<td class="table-cell-actions">' +
+            '<a class="btn small edit" href="#/prescriptions/edit">Edit</a>' +
+            '<form action="#/prescriptions" method="DELETE"><button type="submit" class="btn small danger delete">Delete</button></form> ' +
+            '</td> '),
     events:{
       'submit form[method="DELETE"]':'doDelete'
     },
@@ -146,18 +146,39 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
     className:'prescription-table-control-view',
     tableView:null,
     template:'<div class="pull-right control top">' +
-        '<a href="#/prescriptions/new" class="btn primary">New prescription</a>' +
-        '</div>' +
-        '<div class="table-container"></div>',
+            '<a href="#" class="btn bookmarklet">Bookmarklet</a>&nbsp;' +
+            '<a href="#/prescriptions/new" class="btn primary">New prescription</a>' +
+            '</div>' +
+            '<div class="table-container"></div>',
     initialize:function (options) {
       _.bindAll(this, 'render');
       this.tableView = new PrescriptionApp.Views.PrescriptionTableView({
         collection:options.collection
       });
+
     },
     render:function () {
       this.tableView.render();
       $(this.el).empty().html(_.template(this.template)).find('.table-container:first').append(this.tableView.el);
+
+      var href = window.location.protocol + '//' + window.location.host +
+                      '/' + Backbone.couch_connector.config.db_name +
+                      '/_design/' + Backbone.couch_connector.config.ddoc_name +
+                      '/_list/inject_script/by_domain';
+
+      var inlineScript = _.template('javascript:var p = function(){' +
+              'var s = document.createElement("script");' +
+              'var location = encodeURIComponent(window.location);' +
+              'var domain = encodeURIComponent(window.location.host);' +
+              's.onload = function(){};' +
+              's.src = "<%- href %>" + "?url=" + location + "&startkey=\\"" + domain + "\\"&endkey=\\"" + domain + "\u9999\\"";' +
+              'document.body.appendChild(s);' +
+              '}();', {
+        href: href
+      });
+
+      this.$('.btn.bookmarklet').attr('href', inlineScript);
+
       return this;
     }
   });
@@ -165,16 +186,18 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
   PrescriptionApp.Views.PrescriptionEditView = Backbone.View.extend({
     className:'prescription-edit-view',
     events:{
-      'submit form':'doSave'
+      'submit form':'doSave',
+      'reset form':'doReset',
+      'click .btn.cancel':'doCancel'
     },
     initialize:function () {
-      _.bindAll(this, 'render', 'doSave', 'close', 'updateValidations', 'hasChanged');
+      _.bindAll(this, 'render', 'doSave', 'doReset', 'doCancel', 'close', 'updateValidations', 'hasChanged');
       this.model.bind('remove', this.close);
       this.model.bind('error', this.updateValidations);
       this.model.bind('change', this.hasChanged);
 
       var data = this.model.toJSON();
-      if (!data.id) {
+      if (this.model.isNew()) {
         data.id = 'new';
       }
 
@@ -225,10 +248,10 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
         ],
         buttons:[
           {'class':'primary', type:'submit', humanName:'Submit'},
-          {type:'reset', humanName:'Reset'}
+          {type:'reset', humanName:'Reset'},
+          {type:'button', humanName:'Cancel', 'class':'cancel'}
         ]
       };
-
 
       $(this.el).html(Utility.Templates.renderForm(formStructure));
 
@@ -237,40 +260,49 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
     render:function () {
       return this;
     },
-    hasChanged: function(){
+    hasChanged:function () {
       return this.updateValidations(this.model, this.model.validate());
     },
     updateValidations:function (model, errors) {
       var ctx = this;
       ctx.$('.input.error,.input-outer-container.error,:input.error').removeClass('error').
-          find('.help-inline').text('');
+              find('.help-inline').text('');
 
       _.each(errors, function (v, k) {
         ctx.$(':input[name="' + k + '"]').addClass('error').
-            closest('.input').addClass('error').
-            closest('.input-outer-container').addClass('error').
-            find('.help-inline').text(v);
+                closest('.input').addClass('error').
+                closest('.input-outer-container').addClass('error').
+                find('.help-inline').text(v);
 
       });
     },
     doSave:function () {
       var ctx = this;
       try {
-        if (this.model.isNew()) {
-          this.model.save(null, {
-            success:function () {
-              ctx.close();
-              window.location.href = '#/prescriptions';
-            }
-          });
-        } else {
-          this.model.save();
-        }
+        this.model.save(null, {
+          success:function () {
+            ctx.close();
+            window.location.href = '#/prescriptions';
+          }
+        });
       } catch (e) {
         console.log('error', e);
       }
 
       return false;
+    },
+    doReset:function () {
+      if (!this.model.hasChanged() || confirm('Prescription has unsaved changes, discard?')) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    doCancel:function () {
+      if (!this.model.hasChanged() || confirm('Prescription has unsaved changes, discard?')) {
+        this.close();
+        window.location.href = '#/prescriptions';
+      }
     },
     close:function () {
       this.remove();
@@ -290,6 +322,7 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
 
     newPrescriptionView:null,
     editPrescriptionView:null,
+    listPrescriptionView:null,
     collection:null,
 
     routes:{
@@ -309,6 +342,13 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
     },
     listPrescriptions:function () {
 
+      var parent = this.getParentElement();
+      this.switchToStateClass(parent, 'list-prescriptions-state');
+      this.listPrescriptionView = new PrescriptionApp.Views.PrescriptionTableControlView({
+        collection:this.collection,
+        el:$('.prescriptions-list-container', parent)
+      }).render();
+
     },
     newPrescription:function () {
       var parent = this.getParentElement();
@@ -323,7 +363,7 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
         model = new PrescriptionApp.Models.Prescription();
       }
 
-      this.switchToStateClass(parent, 'edit-prescription-state new-prescription-state');
+      this.switchToStateClass(parent, 'new-prescription-state');
       this.newPrescriptionView = new PrescriptionApp.Views.PrescriptionEditView({
         model:model
       }).render();
@@ -338,6 +378,7 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
         this.editPrescriptionView.close();
         this.editPrescriptionView = null;
       }
+
       // Fetch from the server if this model is not yet in the collection
       if (!model) {
         model = new PrescriptionApp.Models.Prescription({'_id':id});

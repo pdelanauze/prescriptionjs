@@ -55,8 +55,11 @@ define(['jquery', 'underscore'], function ($, _) {
 
       '<div class="actions">' +
       '<% _.each(buttons, function(button){ %>' +
+      '<% if(button.type == "link"){ %>' +
+      '<a class="btn <%= button.class %>" href="<%= button.href %>"><%= button.humanName %></a>&nbsp;' +
+      '<% } else { %>' +
       '<button class="btn <%= button.class %>" type="<%= button.type %>"><%= button.humanName %></button>&nbsp;' +
-      '<% }); %>' +
+      '<% }}); %>' +
       '</div>' +
       '</fieldset></form>';
 

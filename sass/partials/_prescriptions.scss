@@ -1,0 +1,14 @@
+.prescription-app-container{
+  .state{
+    display: none;
+  }
+  &.new-prescription-state .state.new-prescription-state{
+    display: block;
+  }
+  &.edit-prescription-state .state.edit-prescription-state{
+    display: block;
+  }
+  &.list-prescriptions-state .state.list-prescriptions-state{
+    display: block;
+  }
+}
