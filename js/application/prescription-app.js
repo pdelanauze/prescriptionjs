@@ -104,7 +104,7 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
   });
 
   PrescriptionApp.Views.PrescriptionTableView = Backbone.View.extend({
-    className:'table table-striped prescription-table-view',
+    className:'table table-striped vertical-middle prescription-table-view',
     tagName:'table',
     events:{
 
@@ -205,6 +205,7 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
         action:'#/prescriptions/new',
         method:'POST',
         recordId:this.model.get('id'),
+        legend: 'Script editor',
         fields:[
           {
             idPrefix:'prescription',
@@ -212,6 +213,7 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
             humanName:'Id',
             outerClass:'',
             inputOuterClass:'',
+            inputClass: 'input-xlarge',
             value:this.model.get('id'),
             type:'hidden'
           },
@@ -219,6 +221,7 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
             idPrefix:'prescription',
             name:'name',
             humanName:'Name',
+            inputClass: 'input-xlarge',
             value:this.model.get('name'),
             type:'text'
           },
@@ -226,6 +229,7 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
             idPrefix:'prescription',
             name:'domain',
             humanName:'Domain',
+            inputClass: 'input-xlarge',
             value:this.model.get('domain'),
             type:'text'
           },
@@ -233,6 +237,7 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
             idPrefix:'prescription',
             name:'path',
             humanName:'Path',
+            inputClass: 'input-xlarge',
             value:this.model.get('path'),
             type:'text'
           },
@@ -242,7 +247,7 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
             humanName:'Script',
             value:this.model.get('script'),
             type:'textarea',
-            inputClass:'xxlarge',
+            inputClass:'input-xxlarge',
             rows:'7'
           }
         ],
