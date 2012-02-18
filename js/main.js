@@ -4,12 +4,16 @@ require.config({
     'underscore':'application/underscore',
     'backbone':'application/backbone',
     'backbone.marionette': 'application/backbone.marionette',
-    'modelbinding': 'application/backbone.modelbinding'
+    'modelbinding': 'application/backbone.modelbinding',
+    'less': 'application/less-1.2.2',
+    'bootstrap': 'application/bootstrap'
   }
 });
 
 require([
   'jquery',
+  'less',
+  'bootstrap',
   'application/jquery.couch',
   'application/sha1',
   'application/plugins',
@@ -18,7 +22,7 @@ require([
   'application/backbone-couchdb',
   'modelbinding',
   'application/prescription-app'
-], function ($, jQueryCouch, sha1, plugins, _, Backbone, backboneCouchDb, ModelBinding, PrescriptionApp) {
+], function ($, less, bootstrap, jQueryCouch, sha1, plugins, _, Backbone, backboneCouchDb, ModelBinding, PrescriptionApp) {
 
   console.log(arguments);
 

@@ -12,61 +12,61 @@
     <meta content='' name='description' />
     <meta content='' name='author' />
     <meta content='width=device-width, initial-scale=1.0' name='viewport' />
-    <link href='css/style.css?v=1' media='all' rel='stylesheet' />
+    <link href='less/styles.less' rel='stylesheet/less' type='text/css'/>
     <script src='js/modernizr.min.js'></script>
   </head>
   <body>
 
-  <!-- Topbar
- ================================================== -->
-  <div class="topbar" data-scrollspy="scrollspy">
-    <div class="topbar-inner">
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
       <div class="container">
+        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse" href="#">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </a>
         <a class="brand" href="#">PrescriptionJS</a>
-        <ul class="nav">
-          <li class="active"><a href="#/prescriptions">Prescriptions</a></li>
-        </ul>
+        <div class="nav-collapse">
+          <ul class="nav">
+            <li class="active"><a href="#quickstart">Prescriptions</a></li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Masthead (blueprinty thing)
- ================================================== -->
-  <header class="jumbotron masthead" id="overview">
-    <div class="inner">
-      <div class="container">
-        <h1>PrescriptionJS</h1>
+  <div class="container">
 
-        <p class="lead">
-          Make it better.
-        </p>
+    <div class="hero-unit">
+      <h1>PrescriptionJS</h1>
 
-      </div>
-      <!-- /container -->
+      <p>
+        Make it better.
+      </p>
     </div>
-  </header>
 
-  <!-- Quickstart options
- ================================================== -->
-  <div id="prescription-app-container" class="prescription-app-container list-prescriptions-state">
-    <div class="container state list-prescriptions-state">
-      <h2>Prescriptions</h2>
-      <div id="prescriptions-list-container" class="content prescriptions-list-container">
+    <div id="prescription-app-container" class="prescription-app-container list-prescriptions-state">
+      <div class="container state list-prescriptions-state">
+        <h2>Prescriptions</h2>
+        <div id="prescriptions-list-container" class="content prescriptions-list-container">
 
+        </div>
       </div>
-    </div>
-    <div class="container state edit-prescription-state">
-      <h2>Edit prescription</h2>
-      <div class="content prescription-edit-container">
+      <div class="container state edit-prescription-state">
+        <h2>Edit prescription</h2>
+        <div class="content prescription-edit-container">
 
+        </div>
       </div>
-    </div>
-    <div class="container state new-prescription-state">
-      <h2>New prescription</h2>
-      <div class="content prescription-new-container">
+      <div class="container state new-prescription-state">
+        <h2>New prescription</h2>
+        <div class="content prescription-new-container">
 
+        </div>
       </div>
+
     </div>
+
   </div>
 
   <!--<script src='js/require.js?v=1'></script>-->
