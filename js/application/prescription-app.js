@@ -71,8 +71,8 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
             '<td class="path" data-bind="text path"></td> ' +
             '<td class="updated-at" data-bind="text updatedAt"></td>' +
             '<td class="table-cell-actions">' +
-            '<a class="btn small edit" href="#/prescriptions/edit">Edit</a>' +
-            '<form action="#/prescriptions" method="DELETE"><button type="submit" class="btn small danger delete">Delete</button></form> ' +
+            '<a class="btn btn-small btn-primary edit" href="#/prescriptions/edit">Edit</a>' +
+            '<form action="#/prescriptions" method="DELETE"><button type="submit" class="btn btn-small btn-danger delete">Delete</button></form> ' +
             '</td> '),
     events:{
       'submit form[method="DELETE"]':'doDelete'
@@ -104,7 +104,7 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
   });
 
   PrescriptionApp.Views.PrescriptionTableView = Backbone.View.extend({
-    className:'zebra-striped prescription-table-view',
+    className:'table table-striped prescription-table-view',
     tagName:'table',
     events:{
 
@@ -146,8 +146,8 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
     className:'prescription-table-control-view',
     tableView:null,
     template:'<div class="pull-right control top">' +
-            '<a href="#" class="btn bookmarklet">Bookmarklet</a>&nbsp;' +
-            '<a href="#/prescriptions/new" class="btn primary">New prescription</a>' +
+            '<a href="#" class="btn btn-info bookmarklet">Bookmarklet</a>&nbsp;' +
+            '<a href="#/prescriptions/new" class="btn btn-primary">New prescription</a>' +
             '</div>' +
             '<div class="table-container"></div>',
     initialize:function (options) {
@@ -247,7 +247,7 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
           }
         ],
         buttons:[
-          {'class':'primary', type:'submit', humanName:'Submit'},
+          {'class':'btn-primary', type:'submit', humanName:'Submit'},
           {type:'reset', humanName:'Reset'},
           {type:'button', humanName:'Cancel', 'class':'cancel'}
         ]
@@ -265,13 +265,12 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
     },
     updateValidations:function (model, errors) {
       var ctx = this;
-      ctx.$('.input.error,.input-outer-container.error,:input.error').removeClass('error').
+      ctx.$('.control-group.error,:input.error').removeClass('error').
               find('.help-inline').text('');
 
       _.each(errors, function (v, k) {
         ctx.$(':input[name="' + k + '"]').addClass('error').
-                closest('.input').addClass('error').
-                closest('.input-outer-container').addClass('error').
+                closest('.control-group').addClass('error').
                 find('.help-inline').text(v);
 
       });
