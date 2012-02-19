@@ -12,22 +12,12 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
 
   PrescriptionApp.Models.Prescription = Backbone.Model.extend({
     url:'/prescriptions',
-    initialize:function () {
-      if (!this.get('updatedAt')) {
-        this.set({updatedAt:new Date()});
-      }
-      if (!this.get('name')) {
-        this.set({name:''});
-      }
-      if (!this.get('domain')) {
-        this.set({domain:''});
-      }
-      if (!this.get('path')) {
-        this.set({path:''});
-      }
-      if (!this.get('script')) {
-        this.set({script:''});
-      }
+    defaults: {
+      updatedAt: new Date(),
+      name: '',
+      domain: '',
+      path: '',
+      script: ''
     },
     validate:function (attributes) {
       var errors = {};
@@ -257,6 +247,12 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility'], functi
           {type:'button', humanName:'Cancel', 'class':'cancel'}
         ]
       };
+
+      /*Utility.Templates.buildFormStructureFromModel(this.model.toJSON(), formStructure);
+      var scriptField = _.find(formStructure.fields, function(i){return i.name == 'script'});
+      scriptField.inputClass = 'input-xxlarge';
+      scriptField.type = 'textarea';
+      scriptField.rows = 7;*/
 
       $(this.el).html(Utility.Templates.renderForm(formStructure));
 
