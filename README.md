@@ -3,6 +3,7 @@
 A fast way to bootstrap a couchapp into a couchdb server.
 
 Technologies used include
+
 - soca
 - Twitter's bootstrap
 - Backbone.js
