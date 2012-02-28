@@ -1,4 +1,4 @@
-define(['backbone', 'underscore', 'modelbinding', 'application/utility'], function (Backbone, _, ModelBinding, Utility) {
+define(['backbone', 'underscore', 'modelbinding', 'application/utility', 'application/backbone-utility'], function (Backbone, _, ModelBinding, Utility, BackboneUtility) {
 
   var PrescriptionApp = {
     Models:{},

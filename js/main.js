@@ -21,8 +21,9 @@ require([
   'backbone',
   'application/backbone-couchdb',
   'modelbinding',
-  'application/prescription-app'
-], function ($, less, bootstrap, jQueryCouch, sha1, plugins, _, Backbone, backboneCouchDb, ModelBinding, PrescriptionApp) {
+  'application/prescription-app',
+  'application/couchdb-replication-app'
+], function ($, less, bootstrap, jQueryCouch, sha1, plugins, _, Backbone, backboneCouchDb, ModelBinding, PrescriptionApp, CouchDBReplicationApp) {
 
   console.log(arguments);
 
@@ -55,8 +56,12 @@ require([
     var prescriptionRouter = new PrescriptionApp.Routers.PrescriptionRouter({
       collection: prescriptions
     });
+
+    var replicationRouter = new CouchDBReplicationApp.Routers.ReplicationRouter({
+      parentContainerSelector: '#replication-app-container'
+    });
+
     Backbone.history.start();
 
   });
-
 });
