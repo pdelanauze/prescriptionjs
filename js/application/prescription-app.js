@@ -52,104 +52,35 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility', 'applic
     url:'/prescriptions'
   });
 
-  PrescriptionApp.Views.PrescriptionTableItemView = Backbone.View.extend({
-    className:'prescription-table-item-view',
-    tagName:'tr',
-    template:_.template('<td class="id" data-bind="id"></td>' +
-            '<td class="name" data-bind="text name"></td>' +
-            '<td class="domain" data-bind="text domain"></td> ' +
-            '<td class="path" data-bind="text path"></td> ' +
-            '<td class="updated-at" data-bind="text updatedAt"></td>' +
-            '<td class="table-cell-actions">' +
-            '<a class="btn btn-small btn-primary edit" href="#/prescriptions/edit">Edit</a>' +
-            '<form action="#/prescriptions" method="DELETE"><button type="submit" class="btn btn-small btn-danger delete">Delete</button></form> ' +
-            '</td> '),
-    events:{
-      'submit form[method="DELETE"]':'doDelete'
-    },
-    initialize:function () {
-      _.bindAll(this, 'render', 'doDelete');
-      this.model.bind('remove', this.remove);
-      $(this.el).html(this.template(this.model.toJSON()));
-      this.render();
-      ModelBinding.bind(this);
-    },
-    render:function () {
-      this.$('a.edit').attr('href', '#/prescriptions/' + this.model.get('_id') + '/edit');
-      this.$('.btn.delete').closest('form').attr('action', '#/prescriptions/' + this.model.get('_id'));
-      return this;
-    },
-    doDelete:function () {
-      if (confirm('Are you sure ?')) {
-        this.model.destroy();
-        this.close();
-      }
-      return false;
-    },
-    close:function () {
-      this.remove();
-      this.unbind();
-      ModelBinding.unbind(this);
+  PrescriptionApp.Views.PrescriptionTableItemView = BackboneUtility.Views.TableItemView.extend({
+    initialize:function (options) {
+      BackboneUtility.Views.TableItemView.prototype.initialize.call(this, options);
     }
   });
 
-  PrescriptionApp.Views.PrescriptionTableView = Backbone.View.extend({
-    className:'table table-striped vertical-middle prescription-table-view',
-    tagName:'table',
-    events:{
-
-    },
-    initialize:function (options) {
-      _.bindAll(this, 'render', 'itemAdded');
-      this.collection.bind('add', this.itemAdded);
-      this.collection.bind('reset', this.render);
-
-      // Pre-render
-      var columns = [
-        {name:'ID', value:'id'},
-        {name:'Name', value:'name'},
-        {name:'Domain', value:'domain'},
-        {name:'Path', value:'path'},
-        {name:'Last updated', value:'updatedAt'},
-        {name:'', value:''}
-      ];
-
-      $(this.el).html(Utility.Templates.renderTableStructure({
-        columns:columns
-      }));
-
-    },
-    render:function () {
-      var tbody = this.$('tbody:first').empty();
-      this.collection.each(this.itemAdded);
-      return this;
-    },
-    itemAdded:function (model) {
-      var itemView = new PrescriptionApp.Views.PrescriptionTableItemView({
-        model:model
-      }).render();
-      this.$('tbody:first').prepend(itemView.el);
+  PrescriptionApp.Views.PrescriptionTableView = BackboneUtility.Views.TableView.extend({
+    itemView: PrescriptionApp.Views.PrescriptionTableItemView,
+    initialize: function(options){
+      BackboneUtility.Views.TableView.prototype.initialize.call(this, options);
     }
   });
 
-  PrescriptionApp.Views.PrescriptionTableControlView = Backbone.View.extend({
-    className:'prescription-table-control-view',
-    tableView:null,
-    template:'<div class="pull-right control top">' +
-            '<a href="#" class="btn btn-info bookmarklet">Bookmarklet</a>&nbsp;' +
-            '<a href="#/prescriptions/new" class="btn btn-primary">New prescription</a>' +
-            '</div>' +
-            '<div class="table-container"></div>',
+  PrescriptionApp.Views.PrescriptionTableControlView = BackboneUtility.Views.TableControlView.extend({
+    tableView: PrescriptionApp.Views.PrescriptionTableView,
+    modelName: 'prescription',
+    pluralModelName: 'prescriptions',
+    columns: [
+      {name: 'Name', value: 'name', type: 'text'},
+      {name: 'Domain', value: 'domain', type: 'text'},
+      {name: 'Path', value: 'path', type: 'text'},
+      {name: 'Last updated', value: 'updated_at', type: 'text'}
+    ],
     initialize:function (options) {
+      BackboneUtility.Views.TableControlView.prototype.initialize.call(this, options);
       _.bindAll(this, 'render');
-      this.tableView = new PrescriptionApp.Views.PrescriptionTableView({
-        collection:options.collection
-      });
-
     },
     render:function () {
-      this.tableView.render();
-      $(this.el).empty().html(_.template(this.template)).find('.table-container:first').append(this.tableView.el);
+      BackboneUtility.Views.TableControlView.prototype.render.call(this);
 
       var href = window.location.protocol + '//' + window.location.host +
                       '/' + Backbone.couch_connector.config.db_name +
@@ -167,38 +98,32 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility', 'applic
         href: href
       });
 
-      this.$('.btn.bookmarklet').attr('href', inlineScript);
+      var bookmarklet = this.$('.btn.bookmarklet');
+      if (bookmarklet.length === 0){
+        bookmarklet = $('<a href="#" class="btn btn-info bookmarklet">Bookmarklet</a><span> </span>');
+        this.$('.control.top').prepend(bookmarklet);
+      }
+      bookmarklet.attr('href', inlineScript);
 
       return this;
     }
   });
 
-  PrescriptionApp.Views.PrescriptionEditView = Backbone.View.extend({
-    className:'prescription-edit-view',
+  PrescriptionApp.Views.PrescriptionEditView = BackboneUtility.Views.ModelEditView.extend({
+    handleFileAttachments:false,
     events:{
-      'submit form':'doSave',
-      'reset form':'doReset',
-      'click .btn.cancel':'doCancel'
+
     },
-    initialize:function () {
-      _.bindAll(this, 'render', 'doSave', 'doReset', 'doCancel', 'close', 'updateValidations', 'hasChanged');
-      this.model.bind('remove', this.close);
-      this.model.bind('error', this.updateValidations);
-      this.model.bind('change', this.hasChanged);
+    initialize:function (options) {
 
-      var data = this.model.toJSON();
-      if (this.model.isNew()) {
-        data.id = 'new';
-      }
-
-      var formStructure = {
+      this.formStructure = {
         action:'#/prescriptions/new',
         method:'POST',
         recordId:this.model.get('id'),
         legend: 'Script editor',
+        idPrefix:'prescription',
         fields:[
           {
-            idPrefix:'prescription',
             name:'id',
             humanName:'Id',
             outerClass:'',
@@ -208,7 +133,6 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility', 'applic
             type:'hidden'
           },
           {
-            idPrefix:'prescription',
             name:'name',
             humanName:'Name',
             inputClass: 'input-xlarge',
@@ -216,7 +140,6 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility', 'applic
             type:'text'
           },
           {
-            idPrefix:'prescription',
             name:'domain',
             humanName:'Domain',
             inputClass: 'input-xlarge',
@@ -224,7 +147,6 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility', 'applic
             type:'text'
           },
           {
-            idPrefix:'prescription',
             name:'path',
             humanName:'Path',
             inputClass: 'input-xlarge',
@@ -232,7 +154,6 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility', 'applic
             type:'text'
           },
           {
-            idPrefix:'prescription',
             name:'script',
             humanName:'Script',
             value:this.model.get('script'),
@@ -248,152 +169,19 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility', 'applic
         ]
       };
 
-      /*Utility.Templates.buildFormStructureFromModel(this.model.toJSON(), formStructure);
-      var scriptField = _.find(formStructure.fields, function(i){return i.name == 'script'});
-      scriptField.inputClass = 'input-xxlarge';
-      scriptField.type = 'textarea';
-      scriptField.rows = 7;*/
-
-      $(this.el).html(Utility.Templates.renderForm(formStructure));
-
-      ModelBinding.bind(this);
-    },
-    render:function () {
-      return this;
-    },
-    hasChanged:function () {
-      return this.updateValidations(this.model, this.model.validate());
-    },
-    updateValidations:function (model, errors) {
-      var ctx = this;
-      ctx.$('.control-group.error,:input.error').removeClass('error').
-              find('.help-inline').text('');
-
-      _.each(errors, function (v, k) {
-        ctx.$(':input[name="' + k + '"]').addClass('error').
-                closest('.control-group').addClass('error').
-                find('.help-inline').text(v);
-
-      });
-    },
-    doSave:function () {
-      var ctx = this;
-      try {
-        this.model.save(null, {
-          success:function () {
-            ctx.close();
-            window.location.href = '#/prescriptions';
-          }
-        });
-      } catch (e) {
-        console.log('error', e);
-      }
-
-      return false;
-    },
-    doReset:function () {
-      if (!this.model.hasChanged() || confirm('Prescription has unsaved changes, discard?')) {
-        return true;
-      } else {
-        return false;
-      }
-    },
-    doCancel:function () {
-      if (!this.model.hasChanged() || confirm('Prescription has unsaved changes, discard?')) {
-        this.close();
-        window.location.href = '#/prescriptions';
-      }
-    },
-    close:function () {
-      this.remove();
-      this.unbind();
-      ModelBinding.unbind(this);
+      BackboneUtility.Views.ModelEditView.prototype.initialize.call(this, options);
     }
   });
 
-
-  PrescriptionApp.Routers.PrescriptionRouter = Backbone.Router.extend({
-
-    possibleStateClasses:[
-      'list-prescriptions-state',
-      'edit-prescription-state',
-      'new-prescription-state',
-    ],
-
-    newPrescriptionView:null,
-    editPrescriptionView:null,
-    listPrescriptionView:null,
-    collection:null,
-
-    routes:{
-      "prescriptions":'listPrescriptions',
-      "prescriptions/new":'newPrescription',
-      "prescriptions/:id/edit":'editPrescription',
-    },
-    initialize:function (opts) {
-      this.collection = opts.collection;
-    },
-    switchToStateClass:function (el, newClass) {
-      $(el).removeClass(this.possibleStateClasses.join(' ')).addClass(newClass);
-      return this;
-    },
-    getParentElement:function () {
-      return $("#prescription-app-container");
-    },
-    listPrescriptions:function () {
-
-      var parent = this.getParentElement();
-      this.switchToStateClass(parent, 'list-prescriptions-state');
-      this.listPrescriptionView = new PrescriptionApp.Views.PrescriptionTableControlView({
-        collection:this.collection,
-        el:$('.prescriptions-list-container', parent)
-      }).render();
-
-    },
-    newPrescription:function () {
-      var parent = this.getParentElement();
-      var model = null;
-      this.collection.each(function (prescription) {
-        if (prescription.isNew()) {
-          model = prescription;
-        }
-      });
-
-      if (!model) {
-        model = new PrescriptionApp.Models.Prescription();
-      }
-
-      this.switchToStateClass(parent, 'new-prescription-state');
-      this.newPrescriptionView = new PrescriptionApp.Views.PrescriptionEditView({
-        model:model
-      }).render();
-      $(".prescription-new-container", parent).append(this.newPrescriptionView.el);
-    },
-    editPrescription:function (id) {
-      var ctx = this;
-      var parent = this.getParentElement();
-      var model = this.collection.get(id);
-
-      if (this.editPrescriptionView) {
-        this.editPrescriptionView.close();
-        this.editPrescriptionView = null;
-      }
-
-      // Fetch from the server if this model is not yet in the collection
-      if (!model) {
-        model = new PrescriptionApp.Models.Prescription({'_id':id});
-        model.fetch({
-          error:function () {
-            ctx.navigate("#/prescriptions");
-          }
-        });
-      }
-
-      this.switchToStateClass(parent, 'edit-prescription-state');
-      this.editPrescriptionView = new PrescriptionApp.Views.PrescriptionEditView({
-        model:model
-      }).render();
-      $(".prescription-edit-container", parent).append(this.editPrescriptionView.el);
+  PrescriptionApp.Routers.PrescriptionRouter = BackboneUtility.Routers.RESTishRouter.extend({
+    modelName: 'prescription',
+    pluralModelName: 'prescriptions',
+    modelClass: PrescriptionApp.Models.Prescription,
+    tableControlView: PrescriptionApp.Views.PrescriptionTableControlView,
+    modelEditView:PrescriptionApp.Views.PrescriptionEditView,
+    initialize: function(options){
+      this.collection = new PrescriptionApp.Collections.PrescriptionCollection();
+      BackboneUtility.Routers.RESTishRouter.prototype.initialize.call(this, options);
     }
   });
 

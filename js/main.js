@@ -44,17 +44,9 @@ require([
   $(function(){
 
     // Prep the application
-    var prescriptions = new PrescriptionApp.Collections.PrescriptionCollection();
-    var prescriptionsTable = new PrescriptionApp.Views.PrescriptionTableControlView({
-      collection: prescriptions,
-      el: $('#prescriptions-list-container')
-    }).render();
-
-    prescriptionsTable.render();
-    prescriptions.fetch();
 
     var prescriptionRouter = new PrescriptionApp.Routers.PrescriptionRouter({
-      collection: prescriptions
+      parentContainerSelector: '#prescription-app-container'
     });
 
     var replicationRouter = new CouchDBReplicationApp.Routers.ReplicationRouter({
