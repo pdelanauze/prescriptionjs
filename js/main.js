@@ -1,12 +1,12 @@
 require.config({
   paths:{
-    'jquery':'application/jquery.min',
-    'underscore':'application/underscore',
-    'backbone':'application/backbone',
-    'backbone.marionette': 'application/backbone.marionette',
-    'modelbinding': 'application/backbone.modelbinding',
-    'less': 'application/less-1.2.2',
-    'bootstrap': 'application/bootstrap'
+    'jquery':'lib/jquery.min',
+    'underscore':'lib/underscore',
+    'backbone':'lib/backbone',
+    'backbone.marionette': 'lib/backbone.marionette',
+    'modelbinder': 'lib/Backbone.ModelBinder',
+    'less': 'lib/less-1.3.0',
+    'bootstrap': 'lib/bootstrap'
   }
 });
 
@@ -14,26 +14,21 @@ require([
   'jquery',
   'less',
   'bootstrap',
-  'application/jquery.couch',
-  'application/sha1',
-  'application/plugins',
+  'lib/jquery.couch',
+  'lib/sha1',
+  'lib/plugins',
   'underscore',
   'backbone',
-  'application/backbone-couchdb',
-  'modelbinding',
-  'application/prescription-app',
-  'application/couchdb-replication-app'
-], function ($, less, bootstrap, jQueryCouch, sha1, plugins, _, Backbone, backboneCouchDb, ModelBinding, PrescriptionApp, CouchDBReplicationApp) {
+  'lib/backbone.couchdb',
+  'modelbinder',
+  'application/application'
+], function ($, less, boostrap, jQueryCouch, sha1, plugins, _, Backbone, backboneCouchDb, BackboneModelBinder, application) {
 
-  console.log(arguments);
+	// Global configuration
 
   // TODO You need to configure these to point to the right database / couch application
-  Backbone.couch_connector.config.db_name = 'prescriptionjs';
-  Backbone.couch_connector.config.ddoc_name = 'prescriptionjs';
-  Backbone.couch_connector.config.view_name = 'by_type';
-  Backbone.couch_connector.config.global_changes = true;
-
-  ModelBinding.Configuration.configureAllBindingAttributes("name");
+  backboneCouchDb.couch.options.database = 'couchstrap';
+  backboneCouchDb.couch.options.design = 'couchstrap';
 
   _.templateSettings = {
     evaluate    : /<%([\s\S]+?)%>/g,
@@ -41,19 +36,11 @@ require([
     escape      : /<%=([\s\S]+?)%>/g
   };
 
+	// Start the main application
+	application.start();
+
+	// Start the backbone history
   $(function(){
-
-    // Prep the application
-
-    var prescriptionRouter = new PrescriptionApp.Routers.PrescriptionRouter({
-      parentContainerSelector: '#prescription-app-container'
-    });
-
-    var replicationRouter = new CouchDBReplicationApp.Routers.ReplicationRouter({
-      parentContainerSelector: '#replication-app-container'
-    });
-
     Backbone.history.start();
-
   });
 });
