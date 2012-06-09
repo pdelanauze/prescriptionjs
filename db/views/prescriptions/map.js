@@ -1,5 +1,5 @@
 function(doc) {
-  if (doc.collection == 'prescriptions'){
-    emit(doc.updatedAt, doc);
+  if (doc.type == 'prescription'){
+    emit(doc.updatedAt, null);
   }
 }

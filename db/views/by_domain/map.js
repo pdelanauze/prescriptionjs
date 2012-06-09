@@ -1,5 +1,5 @@
 function(doc) {
-  if (doc.collection == 'prescriptions'){
+  if (doc.type == 'prescription'){
     emit(doc.domain, {
       path: doc.path,
       script: doc.script

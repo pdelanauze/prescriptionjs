@@ -27,8 +27,8 @@ require([
 	// Global configuration
 
   // TODO You need to configure these to point to the right database / couch application
-  backboneCouchDb.couch.options.database = 'couchstrap';
-  backboneCouchDb.couch.options.design = 'couchstrap';
+  backboneCouchDb.couch.options.database = 'prescriptionjs';
+  backboneCouchDb.couch.options.design = 'prescriptionjs';
 
   _.templateSettings = {
     evaluate    : /<%([\s\S]+?)%>/g,

@@ -1,3 +1,5 @@
 function(doc) {
-  emit(doc.domain + doc.path, doc.script);
+  if (doc.type === 'prescription'){
+    emit(doc.domain + doc.path, doc.script);
+  }
 }

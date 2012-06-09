@@ -1,4 +1,4 @@
-define(['backbone', 'underscore', 'modelbinding', 'application/utility', 'application/backbone-utility'], function (Backbone, _, ModelBinding, Utility, BackboneUtility) {
+define(['backbone', 'underscore', 'lib/utility', 'lib/backbone-utility', 'lib/backbone-couch-schema-model', 'lib/backbone.couchdb', 'modelbinder'], function (Backbone, _, Utility, BackboneUtility, BackboneSchemaModel, Backbone, ModelBinder) {
 
   var PrescriptionApp = {
     Models:{},
@@ -10,51 +10,61 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility', 'applic
     }
   };
 
-  PrescriptionApp.Models.Prescription = Backbone.Model.extend({
-    url:'/prescriptions',
+  PrescriptionApp.Models.Prescription = BackboneSchemaModel.extend({
     defaults: {
       updatedAt: new Date(),
-      name: '',
-      domain: '',
-      path: '',
-      script: ''
+      type: 'prescription'
     },
-    validate:function (attributes) {
-      var errors = {};
-      var isValid = true;
-
-      // It's persisted, so it's valid ...
-      _.each(attributes, function (v, k) {
-        switch (k) {
-          case 'name':
-            if (!v || v.length < 5) {
-              errors['name'] = 'should be at least 5 characters';
-              isValid = false;
-            }
-            break;
-          case 'domain':
-            if (!v || v.length < 5) {
-              errors['domain'] = 'should be a valid domain name (i.e. google.ca)';
-              isValid = false;
-            }
-            break;
+    schema: {
+      description: 'JavaScript snippet',
+      type: 'prescription',
+      properties: {
+        name: {
+          title: 'Name',
+          type: 'string',
+          required: true,
+          'default': 'The name of your javascript snippet'
+        },
+        domain: {
+          name: 'Domain',
+          type: 'string',
+          required: true,
+          'default': 'The host domain ( e.g. www.google.ca )'
+        },
+        path: {
+          name: 'Path',
+          type: 'string',
+          required: false,
+          'default': 'The start path of the site (e.g. /products for webpages under www.google.ca/products)'
+        },
+        script: {
+          name: 'Script',
+          type: 'string',
+          'default': 'The actual script to execute on the target site.',
+          maxLength: 1000000
         }
-      });
-
-      if (!isValid) {
-        return errors;
       }
     }
   });
 
-  PrescriptionApp.Collections.PrescriptionCollection = Backbone.Collection.extend({
+  PrescriptionApp.Collections.PrescriptionCollection = Backbone.couch.Collection.extend({
     model:PrescriptionApp.Models.Prescription,
-    url:'/prescriptions'
+    change_feed:true,
+    couch:function () {
+      return {
+        view:Backbone.couch.options.design + '/by_type',
+        key: 'prescription',
+        include_docs:true
+      }
+    },
+    initialize:function () {
+      this._db = Backbone.couch.db(Backbone.couch.options.database);
+    }
   });
 
   PrescriptionApp.Views.PrescriptionTableItemView = BackboneUtility.Views.TableItemView.extend({
     initialize:function (options) {
-      BackboneUtility.Views.TableItemView.prototype.initialize.call(this, options);
+      BackboneUtility.Views.TableItemView.prototype.initialize.apply(this, arguments);
     }
   });
 
@@ -67,8 +77,6 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility', 'applic
 
   PrescriptionApp.Views.PrescriptionTableControlView = BackboneUtility.Views.TableControlView.extend({
     tableView: PrescriptionApp.Views.PrescriptionTableView,
-    modelName: 'prescription',
-    pluralModelName: 'prescriptions',
     columns: [
       {name: 'Name', value: 'name', type: 'text'},
       {name: 'Domain', value: 'domain', type: 'text'},
@@ -83,8 +91,8 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility', 'applic
       BackboneUtility.Views.TableControlView.prototype.render.call(this);
 
       var href = window.location.protocol + '//' + window.location.host +
-                      '/' + Backbone.couch_connector.config.db_name +
-                      '/_design/' + Backbone.couch_connector.config.ddoc_name +
+                      '/' + Backbone.couch.options.database +
+                      '/_design/' + Backbone.couch.options.design +
                       '/_list/inject_script/by_domain';
 
       var inlineScript = _.template('javascript:var p = function(){' +
@@ -110,78 +118,65 @@ define(['backbone', 'underscore', 'modelbinding', 'application/utility', 'applic
   });
 
   PrescriptionApp.Views.PrescriptionEditView = BackboneUtility.Views.ModelEditView.extend({
-    handleFileAttachments:false,
     events:{
 
     },
     initialize:function (options) {
-
-      this.formStructure = {
-        action:'#/prescriptions/new',
-        method:'POST',
-        recordId:this.model.get('id'),
-        legend: 'Script editor',
-        idPrefix:'prescription',
-        fields:[
-          {
-            name:'id',
-            humanName:'Id',
-            outerClass:'',
-            inputOuterClass:'',
-            inputClass: 'input-xlarge',
-            value:this.model.get('id'),
-            type:'hidden'
-          },
-          {
-            name:'name',
-            humanName:'Name',
-            inputClass: 'input-xlarge',
-            value:this.model.get('name'),
-            type:'text'
-          },
-          {
-            name:'domain',
-            humanName:'Domain',
-            inputClass: 'input-xlarge',
-            value:this.model.get('domain'),
-            type:'text'
-          },
-          {
-            name:'path',
-            humanName:'Path',
-            inputClass: 'input-xlarge',
-            value:this.model.get('path'),
-            type:'text'
-          },
-          {
-            name:'script',
-            humanName:'Script',
-            value:this.model.get('script'),
-            type:'textarea',
-            inputClass:'input-xxlarge',
-            rows:'7'
-          }
-        ],
-        buttons:[
-          {'class':'btn-primary', type:'submit', humanName:'Submit'},
-          {type:'reset', humanName:'Reset'},
-          {type:'button', humanName:'Cancel', 'class':'cancel'}
-        ]
-      };
-
       BackboneUtility.Views.ModelEditView.prototype.initialize.call(this, options);
     }
   });
 
-  PrescriptionApp.Routers.PrescriptionRouter = BackboneUtility.Routers.RESTishRouter.extend({
+  PrescriptionApp.Routers.PrescriptionRouter = BackboneUtility.Routers.ScaffoldViewBasedRouter.extend({
     modelName: 'prescription',
     pluralModelName: 'prescriptions',
     modelClass: PrescriptionApp.Models.Prescription,
-    tableControlView: PrescriptionApp.Views.PrescriptionTableControlView,
-    modelEditView:PrescriptionApp.Views.PrescriptionEditView,
+    tableControlViewClass: PrescriptionApp.Views.PrescriptionTableControlView,
+    modelEditViewClass:PrescriptionApp.Views.PrescriptionEditView,
     initialize: function(options){
       this.collection = new PrescriptionApp.Collections.PrescriptionCollection();
-      BackboneUtility.Routers.RESTishRouter.prototype.initialize.call(this, options);
+      BackboneUtility.Routers.ScaffoldViewBasedRouter.prototype.initialize.apply(this, arguments);
+
+      this.route(this.pluralModelName + "/migrate", this.pluralModelName + 'MigrationFromOld', this.migratePrescriptions);
+    },
+    migratePrescriptions: function(){
+
+      var container = $(_.template('<div class="alert alert-info"><button class="close" data-dismiss="alert">×</button><strong name="title">Starting migration!</strong> <span name="description">Best check yo self, you\'re not looking too good.</span></div>', {})).prependTo(this.appView.$el);
+
+      var mc = Backbone.Model.extend({});
+      var m = new mc({
+        title:'Starting migration',
+        description:'Waiting to start first migration'
+      });
+      var modelBinder = new ModelBinder();
+      modelBinder.bind(m, container);
+
+      var length = this.collection.length;
+      var i = 0;
+      var doIt = function (prescription) {
+
+        m.set({
+          title:'Migration #' + i++,
+          description:'Migrating prescription ' + prescription.get('name')
+        });
+
+        prescription.unset('collection');
+        prescription.set({type: 'prescription'});
+        prescription.save();
+
+        if (i == length) {
+          // done, unbind and remove
+          modelBinder.unbind();
+          container.remove();
+        }
+
+      };
+
+      this.collection.each(function(prescription){
+        doIt(prescription);
+      });
+
+      // Redirect to the index
+      this.navigate('/' + this.pluralModelName);
     }
   });
 
