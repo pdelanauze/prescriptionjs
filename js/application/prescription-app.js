@@ -28,7 +28,7 @@ define(['backbone', 'underscore', 'lib/utility', 'lib/backbone-utility', 'lib/ba
         domain: {
           name: 'Domain',
           type: 'string',
-          required: true,
+          required: false,
           'default': 'The host domain ( e.g. www.google.ca )'
         },
         path: {
@@ -106,10 +106,42 @@ define(['backbone', 'underscore', 'lib/utility', 'lib/backbone-utility', 'lib/ba
         href: href
       });
 
-      var bookmarklet = this.$('.btn.bookmarklet');
+      var bookmarklet = this.$('.btn.bookmarklet.simple');
       if (bookmarklet.length === 0){
-        bookmarklet = $('<a href="#" class="btn btn-info bookmarklet">Bookmarklet</a><span> </span>');
+        bookmarklet = $('<a href="#" class="btn btn-info bookmarklet simple" rel="popover" data-placement="top" data-original-title="URL detector" data-content="Will load the scripts matching the URL you are on. Drag this button to your bookmarks!">URL detector bookmarklet</a><span> </span>');
         this.$('.control.top').prepend(bookmarklet);
+        bookmarklet.popover();
+      }
+      bookmarklet.attr('href', inlineScript);
+
+      // Create a button for the global bookmark
+      this.addAdvancedBookmarklet();
+
+      return this;
+    },
+    addAdvancedBookmarklet: function(){
+
+      var href = window.location.protocol + '//' + window.location.host +
+        '/' + Backbone.couch.options.database +
+        '/_design/' + Backbone.couch.options.design +
+        '/_list/choose_script/prescriptions';
+
+      var inlineScript = _.template('javascript:var p = function(){' +
+        'var s = document.createElement("script");' +
+        'var location = encodeURIComponent(window.location);' +
+        'var domain = encodeURIComponent(window.location.host);' +
+        's.onload = function(){};' +
+        's.src = "<%- href %>?include_docs=true&url=" + location;' +
+        'document.body.appendChild(s);' +
+        '}();', {
+        href:href
+      });
+
+      var bookmarklet = this.$('.btn.bookmarklet.advanced');
+      if (bookmarklet.length === 0) {
+        bookmarklet = $('<a href="#" class="btn btn-info bookmarklet advanced" rel="popover" data-placement="top" data-original-title="Script picker" data-content="Will display a fixed position popup on the webpage presenting the available scripts. Run them by clicking on them. Drag this button to your bookmarks!">Script picker bookmarklet</a><span> </span>');
+        this.$('.control.top').prepend(bookmarklet);
+        bookmarklet.popover();
       }
       bookmarklet.attr('href', inlineScript);
 

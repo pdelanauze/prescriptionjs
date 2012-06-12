@@ -10,6 +10,7 @@
 	"font": "_attachments/font",
   "img": "_attachments/img",
   "js": "_attachments/js",
+  "js/inline": "js",
   "templates": "_attachments/templates",
   "db": "",
   "Jimfile": false,
