@@ -1,23 +1,10 @@
-# Couchstrap
+# PrescriptionJS
 
-A fast way to bootstrap a couchapp into a couchdb server.
+An easy way to inject your custom javascript in any webpage through a bookmarklet.
 
-Technologies used include
+You need a couchdb instance and the soca gem.
+Checkout the code, update the credentials in the .couchapprc for you couchdb instance, run a `soca push`, and hit up the URL corresponding to that database (e.g. http://localhost:5984/prescriptionjs/_design/prescriptionjs/index.html)
 
-- soca
-- Twitter's bootstrap
-- Require.js
-- Backbone.js (and therefore underscore and jQuery)
-- Backbone.js modelbinder
-- The pyronicide couchdb adapter
-- jQuery
-- Less
-- Require.js
+From there, add the bookmarklet you want to use onto your bookmarks bar, and start writing prescriptions for your soon to be favorite websites!
 
-Tools provided:
-- Backbone utility functions
-- SimpleJsonSchema validator
-- A couchdb compatible BackboneSchemaModel
-- A CouchDB replication app
-- A Todo example app!
-
+:)
